@@ -26,12 +26,14 @@ jobs:
       - run: flutter build appbundle
 
   deploy_production:
-        runs-on: ubuntu-latest
         name: Deploy to Firebase App Distribution
         needs: build_appbundle
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.1
-        with:
-          appId: ${{ secrets.FIREBASE_APP_ID }} # Your Firebase app ID
-          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-          groups: 'testers' # Comma-separated list of tester groups to distribute the app to
-          file: build/app/outputs/bundle/release/app-release.aab # Path to your app file (APK or AAB)
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: wzieba/Firebase-Distribution-Github-Action@v1.7.1
+          with:
+            appId: ${{ secrets.FIREBASE_APP_ID }} # Your Firebase app ID
+            serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+            groups: 'testers' # Comma-separated list of tester groups to distribute the app to
+            file: build/app/outputs/bundle/release/app-release.aab # Path to your app file (APK or AAB)
