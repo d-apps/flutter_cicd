@@ -1,0 +1,52 @@
+name: Continuous Delivery
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Baixa o código
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Instala o Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24.0
+
+      # 3. Instala dependências
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Gera build de release Android
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # 5. (Opcional) Build iOS
+      # - name: Build iOS
+      #   run: flutter build ipa --release --no-codesign
+
+      # 6. Deploy para QA (Firebase App Distribution)
+      - name: Deploy to Firebase App Distribution (QA)
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+          --app ${{ secrets.FIREBASE_APP_ID_QA }} \
+          --groups "qa-testers" \
+          --token ${{ secrets.FIREBASE_AUTH_TOKEN }}
+
+      # 7. Deploy para Play Store (Produção)
+      - name: Deploy to Google Play (Production)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          fastlane supply \
+          --apk build/app/outputs/flutter-apk/app-release.apk \
+          --track production \
+          --json_key ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT }}

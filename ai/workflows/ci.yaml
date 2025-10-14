@@ -1,0 +1,43 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - feature/*
+      - bugfix/*
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Baixa o código do repositório
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Instala o Flutter (ajuste a versão do seu projeto)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24.0
+
+      # 3. Instala dependências
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Análise estática (lint)
+      - name: Analyze code
+        run: flutter analyze
+
+      # 5. Roda os testes unitários
+      - name: Run tests
+        run: flutter test --coverage
+
+      # 6. (Opcional) Faz upload de relatório de cobertura (ex: para Codecov)
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
